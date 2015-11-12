@@ -1,5 +1,5 @@
 EXTIP=5.198.141.210
-VAPPNAME=coreos-remote
+VAPPNAME=coreos-simple
 echo "Power off vApp..."
 vca vapp power-off --vapp ${VAPPNAME}
 echo "Delete vApp..."
