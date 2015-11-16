@@ -1,7 +1,6 @@
-cat > ${TMP_CLOUD_CONFIG_DIR}/openstack/latest/user_data << __CLOUD_CONFIG__
 #cloud-config
 
-hostname: ${NODEVMNAME}
+hostname: node3
 
 write_files: 
   - path: /etc/systemd/network/static.network 
@@ -10,25 +9,25 @@ write_files:
       [Match] 
       Name=en*
       [Network] 
-      Address=${NODEIP}/24 
-      Gateway=${GW}
+      Address=192.168.3.14/24 
+      Gateway=192.168.3.1
       DNS=8.8.8.8
 users:
-  - name: ${USERNAME}
+  - name: core
     primary-group: wheel
     groups:
       - sudo
       - docker
     ssh-authorized-keys:
-      - ${PUBKEY}
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCaiKPH9lrBMqeHntN8w84hLCGMm4cl3Ataejk4SXSXSaMufX27p/dP8ta4Wo7l2Rh+E0KdXcOnBA5bjoOngnQWhONgRLNavvqNzxW+I9dhHJ3CC/NdUHkXgH1U4OD59+e7sxuWQjTYs1bUx9h9KSgrrfOabDOpE9f5K145pk3dCc9AMg+YKkymhhrKml7vkM3HcFCsR60ZOhe6t0HPVvCrIrD7QoO/XJyelgxQkxG5wkgEMsOw0PiFqefIZMT3xWACp9hiCymQR1p45ot6oG6tKD1H9HtASTb8RmhYwASXns30bbxJhh/K1CAz5+HTAjogFeiGty3zl87WwmgL7hsP andypowe11@iMac.local
       
 coreos:
   etcd2:
-    discovery: ${DISCOVERYURL}
-    advertise-client-urls: http://${NODEIP}:2379
-    initial-advertise-peer-urls: http://${NODEIP}:2380
+    discovery: https://discovery.etcd.io/1306cc59ffd024d469898ab3341c91d4
+    advertise-client-urls: http://192.168.3.14:2379
+    initial-advertise-peer-urls: http://192.168.3.14:2380
     listen-client-urls: http://0.0.0.0:2379,http://0.0.0.0:4001
-    listen-peer-urls: http://${NODEIP}:2380
+    listen-peer-urls: http://192.168.3.14:2380
   units:
     - name: systemd-networkd.service
       command: start
@@ -68,21 +67,7 @@ coreos:
 
         [Service]
         Restart=no
-        ExecStart=/usr/bin/docker run --name docker-swarm -d swarm join --addr=${NODEIP}:4243 etcd://${MASTERIP}:2379/swarm
+        ExecStart=/usr/bin/docker run --name docker-swarm -d swarm join --addr=192.168.3.14:4243 etcd://192.168.3.14:2379/swarm
   update:
     reboot-strategy: best-effort
-
-__CLOUD_CONFIG__
-  
-echo "Creating node cloud config ISO ..."
-mkisofs -R -V config-2 -o ${CLOUD_CONFIG_ISO} ${TMP_CLOUD_CONFIG_DIR}
-echo "Upload ISO..."
-#vca catalog upload --catalog cpd.eduserv.org.uk --item ${CLOUD_CONFIG_ISO} --description ${CLOUD_CONFIG_ISO} --file ${CLOUD_CONFIG_ISO}
-/Applications/VMware\ OVF\ Tool/ovftool --sourceType='ISO' ${NODEVMNAME}-config.iso "vcloud://andy.powell@eduserv.org.uk:Vbike43G@compute.cloud.eduserv.org.uk:?org=cpd.eduserv.org.uk&vdc=cpd.eduserv.org.uk_SDC_A01&catalog=cpd.eduserv.org.uk&media=${NODEVMNAME}-config.iso"
-
-echo "Wait for vCloud Director to catch up..."
-sleep 30
-
-echo "Insert ISO into VM CD drive..."
-vca vapp insert --vapp ${VAPPNAME} --vm ${NODEVMNAME} --catalog cpd.eduserv.org.uk --media ${NODEVMNAME}-config.iso
 

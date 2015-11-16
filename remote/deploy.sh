@@ -101,4 +101,5 @@ vca nat add --type snat --original-ip ${IP} --original-port any --translated-ip 
 
 echo "Testing docker..."
 export DOCKER_HOST=tcp://5.198.141.210:2375
+docker info
 docker run docker/whalesay cowsay 'It works!'
