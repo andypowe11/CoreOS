@@ -1,6 +1,6 @@
 #cloud-config
 
-hostname: master
+hostname: node1
 
 write_files: 
   - path: /etc/systemd/network/static.network 
@@ -9,7 +9,7 @@ write_files:
       [Match] 
       Name=en*
       [Network] 
-      Address=192.168.3.7/24 
+      Address=192.168.3.4/24 
       Gateway=192.168.3.1
       DNS=8.8.8.8
 users:
@@ -23,11 +23,11 @@ users:
       
 coreos:
   etcd2:
-    discovery: https://discovery.etcd.io/46f3f98e4948d8dff8e865defd63f4d2
-    advertise-client-urls: http://192.168.3.7:2379
-    initial-advertise-peer-urls: http://192.168.3.7:2380
+    discovery: https://discovery.etcd.io/c4dbf003ae4efd7408259be2e3257971
+    advertise-client-urls: http://192.168.3.4:2379
+    initial-advertise-peer-urls: http://192.168.3.4:2380
     listen-client-urls: http://0.0.0.0:2379,http://0.0.0.0:4001
-    listen-peer-urls: http://192.168.3.7:2380
+    listen-peer-urls: http://192.168.3.4:2380
   units:
     - name: systemd-networkd.service
       command: start
@@ -68,8 +68,8 @@ coreos:
         [Service]
         Restart=on-failure
         RestartSec=10
-        ExecStartPre=-/usr/bin/docker rm 
-        ExecStart=/usr/bin/docker run --name docker-swarm -d -p 2375:2375 swarm manage etcd://192.168.3.7:2379/swarm
+        ExecStartPre=-/usr/bin/docker ps -q -f status=exited | xargs /usr/bin/docker rm
+        ExecStart=/usr/bin/docker run --name docker-swarm -d swarm join --addr=192.168.3.4:4243 etcd://192.168.3.4:2379/swarm
   update:
     reboot-strategy: best-effort
 

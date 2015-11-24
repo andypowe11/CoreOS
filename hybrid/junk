@@ -1,0 +1,40 @@
+    "RouteViaVpn" : {
+      "Type" : "AWS::EC2::RouteTable",
+      "Properties" : {
+        "VpcId" : { "Ref" : "Vpc"}
+      }
+    },
+
+    "PrivateSubnet1RouteTableAssociation" : {
+      "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties" : {
+        "SubnetId" : { "Ref" : "PubSubnetAz1" },
+        "RouteTableId" : { "Ref" : "RouteViaVpn" }
+      }
+    },
+
+    "PrivateSubnet2RouteTableAssociation" : {
+      "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties" : {
+        "SubnetId" : { "Ref" : "PubSubnetAz2" },
+        "RouteTableId" : { "Ref" : "RouteViaVpn" }
+      }
+    },
+
+    "PrivateSubnet3RouteTableAssociation" : {
+      "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties" : {
+        "SubnetId" : { "Ref" : "PubSubnetAz3" },
+        "RouteTableId" : { "Ref" : "RouteViaVpn" }
+      }
+    },
+
+    "PrivateRouteViaVpn" : {
+      "Type" : "AWS::EC2::Route",
+      "Properties" : {
+        "RouteTableId" : { "Ref" : "RouteViaVpn" },
+        "DestinationCidrBlock" : { "Ref" : "VCloudDirectorSubnet" },
+        "GatewayId" : { "Ref" : "VpnGateway" }
+      }
+    },
+
